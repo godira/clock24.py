@@ -14,6 +14,7 @@ width = 140
 sin_table = []
 cos_table = []
 backboard = []
+radian = 3.1415/180
 
 # キャンバス
 c0 = Canvas(root, width = 140, height = 140, bg = 'darkgreen')
@@ -28,11 +29,11 @@ min  = c0.create_line(70, 70, 70, 20, fill = 'green', width = 2.0)
 sec  = c0.create_line(70, 70, 70, 15, fill = 'red')
 
 # データの初期化
-def init_data():
-    for i in range(720):
-        rad = 3.14 / 360 * i
-        sin_table.append(math.sin(rad))
-        cos_table.append(math.cos(rad))
+#def init_data():
+#    for i in range(720):
+#        rad = 3.14 / 360 * i
+#        sin_table.append(math.sin(rad))
+#        cos_table.append(math.cos(rad))
 
 
 # 背景の描画
@@ -40,13 +41,13 @@ def draw_backboard():
     r = width / 2
     # 円
     c0.coords(circle, 5, 5, width - 5, width - 5)
-    # 目盛
+    # 目盛(30度ピッチ)
     for i in range(12):
-        n = i * 60
-        x1 = r + (r - 5) * sin_table[n]
-        y1 = r + (r - 5) * cos_table[n]
-        x2 = r + (r - 5) * 4 / 5 * sin_table[n]
-        y2 = r + (r - 5) * 4 / 5 * cos_table[n]
+        n = i * 30
+        x1 = r + (r - 5) * math.sin(radian * n)
+        y1 = r + (r - 5) * math.cos(radian * n)
+        x2 = r + (r - 5) * 4 / 5 * math.sin(radian * n)
+        y2 = r + (r - 5) * 4 / 5 * math.cos(radian * n)
         c0.coords(backboard[i], x1, y1, x2, y2)
 
 # 針を描く
@@ -56,15 +57,15 @@ def draw_hand():
     rs = r * 7 / 8
     rm = r * 6 / 8
     rh = r * 5 / 8
-    # 秒
-    n = t[5] * 12
-    x = r + rs * sin_table[n]
-    y = r - rs * cos_table[n]
+    # 秒(1秒で6度)
+    n = t[5] * 6
+    x = r + rs * math.sin(radian * n)
+    y = r - rs * math.cos(radian * n)
     c0.coords(sec, r, r, x, y)
-    # 分
-    n = t[4] * 12
-    x = r + rm * sin_table[n]
-    y = r - rm * cos_table[n]
+    # 分(1分で6度+1秒で0.1度)
+    n = t[4] * 6 + t[5] * 0.1
+    x = r + rm * math.sin(radian * n)
+    y = r - rm * math.cos(radian * n)
     c0.coords(min, r, r, x, y)
     # 時 (２４時間表示で下が０時)
     h = t[3]
@@ -72,9 +73,9 @@ def draw_hand():
 #    n = h * 60 + t[4]
     h = h - 12
     if h < 0: h += 24
-    n = h * 30 + t[4]
-    x = r + rh * sin_table[n]
-    y = r - rh * cos_table[n]
+    n = h * 15 + t[4] * 0.25
+    x = r + rh * math.sin(radian * n)
+    y = r - rh * math.cos(radian * n)
     c0.coords(hour, r, r, x, y)
 
 # 大きさの変更
@@ -98,7 +99,7 @@ def show_time():
 root.bind('<Configure>', change_size)
 
 # データの初期化
-init_data()
+#init_data()
 
 # 最初の起動
 draw_backboard()
