@@ -1,32 +1,43 @@
-#! /usr/bin/python3
+#! /usr/bin/python
 # coding: UTF-8
-from Tkinter import *
+#from Tkinter import *
+import Tkinter as tk
 import math, time
 
-# メインウィンドウ
-root = Tk()
-root.title(u'時計')
-root.minsize(100, 100)
-root.maxsize(400, 400)
-
 # グローバル変数
-width = 140
-sin_table = []
-cos_table = []
+win_size = 200
+#sin_table = []
+#cos_table = []
 backboard = []
 radian = 3.1415/180
 
+# メインウィンドウ
+root = tk.Tk()
+root.title(u'24時計')
+root.minsize(160, 160)
+root.maxsize(400, 400)
+
 # キャンバス
-c0 = Canvas(root, width = 140, height = 140, bg = 'darkgreen')
-c0.pack(expand = True, fill = BOTH)
+c0 = tk.Canvas(root, width = 200, height = 200, bg = 'darkgreen')
+c0.pack(expand = True, fill = tk.BOTH)
 
 # 図形の生成
-circle = c0.create_oval(5, 5, 135, 135, fill = 'darkgray', outline = 'darkgray')
+circle = c0.create_oval(5, 5, 195, 195, fill = 'lightgray', outline = 'lightgray')
+#     夜
+sunrise = 150
+sunset = 10 + 360
+night = c0.create_arc(5, 5, 195, 195, start = sunrise, extent = sunset - sunrise, fill = 'darkgray')
+#     文字盤
+dial0 = c0.create_text(100, 195, text = '0', anchor = 's')
+dial6 = c0.create_text(5, 100, text = '6', anchor = 'w')
+dial12 = c0.create_text(100, 5, text = '12', anchor = 'n')
+dial18 = c0.create_text(195, 100, text = '18', anchor = 'e')
+
 for i in range( 12 ):
     backboard.append(c0.create_line(i, i, 135, 135, width = 2.0))
-hour = c0.create_line(70, 70, 70, 30, fill = 'blue', width = 3.0)
-min  = c0.create_line(70, 70, 70, 20, fill = 'green', width = 2.0)
-sec  = c0.create_line(70, 70, 70, 15, fill = 'red')
+hour = c0.create_line(100, 100, 100, 60, fill = 'blue', width = 3.0)
+min  = c0.create_line(100, 100, 100, 50, fill = 'green', width = 2.0)
+sec  = c0.create_line(100, 100, 100, 45, fill = 'red')
 
 # データの初期化
 #def init_data():
@@ -38,25 +49,32 @@ sec  = c0.create_line(70, 70, 70, 15, fill = 'red')
 
 # 背景の描画
 def draw_backboard():
-    r = width / 2
+    r = win_size / 2
     # 円
-    c0.coords(circle, 5, 5, width - 5, width - 5)
+    c0.coords(circle, 5, 5, win_size - 5, win_size - 5)
+    # 夜
+    c0.coords(night, 5, 5, win_size - 5, win_size - 5)
     # 目盛(30度ピッチ)
     for i in range(12):
         n = i * 30
-        x1 = r + (r - 5) * math.sin(radian * n)
-        y1 = r + (r - 5) * math.cos(radian * n)
-        x2 = r + (r - 5) * 4 / 5 * math.sin(radian * n)
-        y2 = r + (r - 5) * 4 / 5 * math.cos(radian * n)
+        x1 = r + (r - 25) * math.sin(radian * n)
+        y1 = r + (r - 25) * math.cos(radian * n)
+        x2 = r + (r - 25) * 4 / 5 * math.sin(radian * n)
+        y2 = r + (r - 25) * 4 / 5 * math.cos(radian * n)
         c0.coords(backboard[i], x1, y1, x2, y2)
+    # 文字盤
+    c0.coords(dial0, r, win_size - 8)
+    c0.coords(dial6, 10, r)
+    c0.coords(dial12, r, 8)
+    c0.coords(dial18, win_size - 8, r)
 
 # 針を描く
 def draw_hand():
     t = time.localtime()
-    r = width / 2
-    rs = r * 7 / 8
-    rm = r * 6 / 8
-    rh = r * 5 / 8
+    r = win_size / 2
+    rs = r * 7 / 10
+    rm = r * 6 / 10
+    rh = r * 5 / 10
     # 秒(1秒で6度)
     n = t[5] * 6
     x = r + rs * math.sin(radian * n)
@@ -71,8 +89,7 @@ def draw_hand():
     h = t[3]
 #    if h >= 12: h -= 12
 #    n = h * 60 + t[4]
-    h = h - 12
-    if h < 0: h += 24
+    h = h + 12
     n = h * 15 + t[4] * 0.25
     x = r + rh * math.sin(radian * n)
     y = r - rh * math.cos(radian * n)
@@ -80,13 +97,13 @@ def draw_hand():
 
 # 大きさの変更
 def change_size(event):
-    global width
+    global win_size
     w = c0.winfo_width()
     h = c0.winfo_height()
     if w < h:
-        width = w
+        win_size = w
     else:
-        width = h
+        win_size = h
     draw_backboard()
     draw_hand()
 
