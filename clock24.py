@@ -4,10 +4,6 @@
 import Tkinter as tk
 import math, time, datetime
 
-# (C) 2015 SiRaKaWa
-# Sunrize,sunset計算program は www.hoshi-lab.info/env/solar.html を参考にした。
-# 時計program は www.geocities.jp/m_hiroi/light/pytk07.html を参考にした。
-
 # この場所のデータ
 la = 34.8   # 緯度(度)。北緯は+,南緯は-
 lo = 140.0  # 経度(度)。東経は+,西経は-
@@ -157,7 +153,8 @@ def sodr(la, th, al, dl):  # la latitude, th sidereal hour, al solar declination
 		dr += 360
 	return dr
 
-# 今日の日の出日没時刻計算(sunrize_h 日の出時, sunrize_m 日の出分, sunset_h 日没時, sunset_m 日没分)
+# 今日の日の出日没時刻計算(sunrize_h 日の出時, sunrize_m 日の出分, sunset_h 日没時, sunset_m 日没分,
+#							meridian_h 南中時, meridiann_m 南中分)
 def sunpos():
 	global la, lo, alt, tdiff
 	# 今日の年月日
@@ -191,12 +188,15 @@ def sunpos():
 			if pht < ts and ht > ts :
 				sunrize_h = hh
 				sunrize_m = m
+			if pdr < 180 and dr > 180 :
+				meridian_h = hh
+				meridian_m = m
 			if pht > ts and ht < ts :
 				sunset_h = hh
 				sunset_m = m
 			pht = ht
 			pdr = dr
-	return (sunrize_h, sunrize_m, sunset_h, sunset_m)
+	return (sunrize_h, sunrize_m, sunset_h, sunset_m, meridian_h, meridian_m)
 
 # 24時時計
 # メインウィンドウ
@@ -209,39 +209,56 @@ root.maxsize(400, 400)
 c0 = tk.Canvas(root, width = 200, height = 200, bg = 'lightblue')
 c0.pack(expand = True, fill = tk.BOTH)
 
-# 図形の生成
+    # 時計下地
 circle = c0.create_oval(5, 5, 195, 195, fill = 'lightgray', outline = 'lightgray')
 
-#     夜
-def night_arc():	
-	sun_r_h, sun_r_m, sun_s_h, sun_s_m = sunpos()
+    # 太陽マーク
+def sun_mark():
+	sun_r_h, sun_r_m, sun_s_h, sun_s_m, sun_me_h, sun_me_m = sunpos()
+	# 夜
 	sun_r = 18 - sun_r_h - sun_r_m / 60.0
 	sunrize = sun_r * 15
 	sun_s = 18 - sun_s_h - sun_s_m / 60.0
 	sunset = sun_s * 15
-	night_a = c0.create_arc(5, 5, win_size - 5, win_size - 5, start = sunrize, extent = 360 - sunrize + sunset, fill = 'darkgray', outline = 'darkgray')
-	c0.tag_raise(night_a, circle)
-	return night_a
+	night = c0.create_arc(5, 5, win_size - 5, win_size - 5, start = sunrize, extent = 360 - sunrize + sunset, fill = 'darkgray', outline = 'darkgray')
+	c0.tag_raise(night, circle)
+	# 南中太陽
+	k = 5 # 太陽マークの半径
+	n = (24 - sun_me_h - sun_me_m / 60.0) * 15
+	x = 100 * math.sin(rad * n)
+	y = 100 * math.cos(rad * n)
+	sun = c0.create_oval(x - k, y + k, x + k, y - k, fill = 'yellow', outline = 'yellow')
+	return night, sun
 
-#     文字盤
+    # 文字盤
 dial0 = c0.create_text(100, 195, text = u'子', anchor = 's')
 dial6 = c0.create_text(5, 100, text = u'卯', anchor = 'w')
 dial12 = c0.create_text(100, 5, text = u'午', anchor = 'n')
 dial18 = c0.create_text(195, 100, text = u'酉', anchor = 'e')
 
+    # 目盛り
 for i in range( 12 ):
     backboard.append(c0.create_line(i, i, 135, 135, width = 2.0))
+
+    # 針
 hour = c0.create_line(100, 100, 100, 60, fill = 'blue', width = 4.0)
 min  = c0.create_line(100, 100, 100, 50, fill = 'green', width = 3.0)
 sec  = c0.create_line(100, 100, 100, 45, fill = 'red', width = 2.0)
 
 # 背景の描画
 def draw_backboard():
+	sun_r_h, sun_r_m, sun_s_h, sun_s_m, sun_me_h, sun_me_m = sunpos()
 	r = win_size / 2
 	# 円
 	c0.coords(circle, 5, 5, win_size - 5, win_size - 5)
 	# 夜
 	c0.coords(night, 5, 5, win_size - 5, win_size - 5)
+	# 南中太陽
+	k = 5 # 太陽マークの半径
+	n = (24 - sun_me_h - sun_me_m / 60.0) * 15
+	x = r + (r - 30) * math.sin(rad * n)
+	y = r + (r - 30) * math.cos(rad * n)
+	c0.coords(sun, x - k, y + k, x + k, y - k)
 		# 目盛(30度ピッチ)
 	for i in range(12):
 		n = i * 30
@@ -305,7 +322,7 @@ def change_size(event):
 def show_time():
 	sun_flag = draw_hand()
 	if sun_flag == 1 :
-		night = night_arc()
+		night, sun = sun_mark()
 		draw_backboard()
 	root.after(1000, show_time)
 
@@ -314,9 +331,14 @@ root.bind('<Configure>', change_size)
 
 # 最初の起動
 
-night = night_arc()
+night, sun = sun_mark()
 draw_backboard()
 show_time()
 
 # メインループ
 root.mainloop()
+
+# (C) 2015 SiRaKaWa
+# 参考文献
+# 太陽位置計算部分： www.hoshi-lab.info/env/solar.html
+# 時計部分： www.geocities.jp/m_hiroi/light/pytk07.html
