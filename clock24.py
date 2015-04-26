@@ -10,19 +10,6 @@ lo = 140.0  # 経度(度)。東経は+,西経は-
 alt = 0.0   # 標高(m)
 tdiff = 9.0   # グリニッジ標準時との時差
 
-# グローバル変数
-win_size = 200
-backboard = []
-backboard1 = []
-rad = math.pi/180
-
-# 太陽計算インターバルのための初期化
-start_time = time.localtime()
-h = start_time[3]
-h_old = h - 1
-if h_old < 0 :
-	h_old = 23
-
 # 三角関数を度で計算
 def sind(d):
 	return math.sin(d*rad)
@@ -201,20 +188,6 @@ def sunpos():
 			pdr = dr
 	return (sunrize_h, sunrize_m, sunset_h, sunset_m, meridian_h, meridian_m, yy, mm, dd)
 
-# 24時時計
-# メインウィンドウ
-root = tk.Tk()
-root.title(u'  和時計')
-root.minsize(160, 160)
-root.maxsize(400, 400)
-
-# キャンバス
-c0 = tk.Canvas(root, width = 200, height = 200, bg = 'lightblue')
-c0.pack(expand = True, fill = tk.BOTH)
-
-    # 時計下地
-circle = c0.create_oval(5, 5, 195, 195, fill = 'lightgray', outline = 'lightgray')
-
     # 太陽マーク
 def sun_mark():
 	sun_r_h, sun_r_m, sun_s_h, sun_s_m, sun_me_h, sun_me_m, yy, mm, dd = sunpos()
@@ -237,25 +210,6 @@ def sun_mark():
 	y = 100 * math.cos(rad * n)
 	sun = c0.create_oval(x - k, y + k, x + k, y - k, fill = 'yellow', outline = 'yellow')
 	return night, sun
-
-    # 文字盤
-dial0 = c0.create_text(100, 195, text = u'子', anchor = 's')
-dial6 = c0.create_text(5, 100, text = u'卯', anchor = 'w')
-dial12 = c0.create_text(100, 5, text = u'午', anchor = 'n')
-dial18 = c0.create_text(195, 100, text = u'酉', anchor = 'e')
-
-    # 目盛り
-for i in range( 12 ):
-    backboard.append(c0.create_line(i, i, 135, 135, width = 2.0))
-
-	# 中間目盛り
-for i in range( 12 ):
-	backboard1.append(c0.create_line(i, i, 135, 135, width = 2.0))
-
-    # 針
-hour = c0.create_line(100, 100, 100, 60, fill = 'blue', width = 4.0)
-min  = c0.create_line(100, 100, 100, 50, fill = 'green', width = 3.0)
-sec  = c0.create_line(100, 100, 100, 45, fill = 'red', width = 2.0)
 
 # 背景の描画
 def draw_backboard():
@@ -324,7 +278,6 @@ def draw_hand():
 		sun = 1
 	h_old = h
 	return sun
-	
 
 # 大きさの変更
 def change_size(event):
@@ -345,6 +298,52 @@ def show_time():
 		night, sun = sun_mark()
 		draw_backboard()
 	root.after(1000, show_time)
+
+# グローバル変数
+win_size = 200
+backboard = []
+backboard1 = []
+rad = math.pi/180
+
+# 太陽計算インターバルのための初期化
+start_time = time.localtime()
+h = start_time[3]
+h_old = h - 1
+if h_old < 0 :
+	h_old = 23
+
+# 24時時計
+# メインウィンドウ
+root = tk.Tk()
+root.title(u'  和時計')
+root.minsize(160, 160)
+root.maxsize(400, 400)
+
+# キャンバス
+c0 = tk.Canvas(root, width = 200, height = 200, bg = 'lightblue')
+c0.pack(expand = True, fill = tk.BOTH)
+
+    # 時計下地
+circle = c0.create_oval(5, 5, 195, 195, fill = 'lightgray', outline = 'lightgray')
+
+    # 文字盤
+dial0 = c0.create_text(100, 195, text = u'子', anchor = 's')
+dial6 = c0.create_text(5, 100, text = u'卯', anchor = 'w')
+dial12 = c0.create_text(100, 5, text = u'午', anchor = 'n')
+dial18 = c0.create_text(195, 100, text = u'酉', anchor = 'e')
+
+    # 目盛り
+for i in range( 12 ):
+    backboard.append(c0.create_line(i, i, 135, 135, width = 2.0))
+
+	# 中間目盛り
+for i in range( 12 ):
+	backboard1.append(c0.create_line(i, i, 135, 135, width = 2.0))
+
+    # 針
+hour = c0.create_line(100, 100, 100, 60, fill = 'blue', width = 4.0)
+min  = c0.create_line(100, 100, 100, 50, fill = 'green', width = 3.0)
+sec  = c0.create_line(100, 100, 100, 45, fill = 'red', width = 2.0)
 
 # バインディング
 root.bind('<Configure>', change_size)
