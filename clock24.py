@@ -1,7 +1,7 @@
-#! /usr/bin/python
+#! /usr/bin/python3
 # coding: UTF-8
 
-import Tkinter as tk
+import tkinter as tk # Py2の場合は Tkinter as tk
 import math, time, datetime
 
 # この場所のデータ
@@ -13,12 +13,15 @@ tdiff = 9.0   # グリニッジ標準時との時差
 # グローバル変数
 win_size = 200
 backboard = []
+backboard1 = []
 rad = math.pi/180
 
 # 太陽計算インターバルのための初期化
 start_time = time.localtime()
-h_old = start_time[3]
-h = h_old + 1
+h = start_time[3]
+h_old = h - 1
+if h_old < 0 :
+	h_old = 23
 
 # 三角関数を度で計算
 def sind(d):
@@ -196,7 +199,7 @@ def sunpos():
 				sunset_m = m
 			pht = ht
 			pdr = dr
-	return (sunrize_h, sunrize_m, sunset_h, sunset_m, meridian_h, meridian_m)
+	return (sunrize_h, sunrize_m, sunset_h, sunset_m, meridian_h, meridian_m, yy, mm, dd)
 
 # 24時時計
 # メインウィンドウ
@@ -214,14 +217,19 @@ circle = c0.create_oval(5, 5, 195, 195, fill = 'lightgray', outline = 'lightgray
 
     # 太陽マーク
 def sun_mark():
-	sun_r_h, sun_r_m, sun_s_h, sun_s_m, sun_me_h, sun_me_m = sunpos()
+	sun_r_h, sun_r_m, sun_s_h, sun_s_m, sun_me_h, sun_me_m, yy, mm, dd = sunpos()
+	print(yy, "年", mm, "月", dd, "日")
+	print("日の出  ", sun_r_h, "時", sun_r_m, "分")
+	print("日の入　", sun_s_h, "時", sun_s_m, "分")
+	print("南　中　", sun_me_h, "時", sun_me_m, "分")
+	print()
 	# 夜
 	sun_r = 18 - sun_r_h - sun_r_m / 60.0
 	sunrize = sun_r * 15
 	sun_s = 18 - sun_s_h - sun_s_m / 60.0
 	sunset = sun_s * 15
 	night = c0.create_arc(5, 5, win_size - 5, win_size - 5, start = sunrize, extent = 360 - sunrize + sunset, fill = 'darkgray', outline = 'darkgray')
-	c0.tag_raise(night, circle)
+	c0.tag_raise(night, circle) # これがないと目盛りや針が隠れてしまう
 	# 南中太陽
 	k = 5 # 太陽マークの半径
 	n = (24 - sun_me_h - sun_me_m / 60.0) * 15
@@ -240,6 +248,10 @@ dial18 = c0.create_text(195, 100, text = u'酉', anchor = 'e')
 for i in range( 12 ):
     backboard.append(c0.create_line(i, i, 135, 135, width = 2.0))
 
+	# 中間目盛り
+for i in range( 12 ):
+	backboard1.append(c0.create_line(i, i, 135, 135, width = 2.0))
+
     # 針
 hour = c0.create_line(100, 100, 100, 60, fill = 'blue', width = 4.0)
 min  = c0.create_line(100, 100, 100, 50, fill = 'green', width = 3.0)
@@ -247,7 +259,7 @@ sec  = c0.create_line(100, 100, 100, 45, fill = 'red', width = 2.0)
 
 # 背景の描画
 def draw_backboard():
-	sun_r_h, sun_r_m, sun_s_h, sun_s_m, sun_me_h, sun_me_m = sunpos()
+	sun_r_h, sun_r_m, sun_s_h, sun_s_m, sun_me_h, sun_me_m, yy, mm, dd = sunpos()
 	r = win_size / 2
 	# 円
 	c0.coords(circle, 5, 5, win_size - 5, win_size - 5)
@@ -259,7 +271,7 @@ def draw_backboard():
 	x = r + (r - 30) * math.sin(rad * n)
 	y = r + (r - 30) * math.cos(rad * n)
 	c0.coords(sun, x - k, y + k, x + k, y - k)
-		# 目盛(30度ピッチ)
+	# 目盛(30度ピッチ)
 	for i in range(12):
 		n = i * 30
 		x1 = r + (r - 25) * math.sin(rad * n)
@@ -267,6 +279,14 @@ def draw_backboard():
 		x2 = r + (r - 25) * 4 / 5 * math.sin(rad * n)
 		y2 = r + (r - 25) * 4 / 5 * math.cos(rad * n)
 		c0.coords(backboard[i], x1, y1, x2, y2)
+	# 中間目盛り
+	for i in range(12):
+		n = i * 30 + 15
+		x1 = r + (r - 25) * 9 / 10 * math.sin(rad * n)
+		y1 = r + (r - 25) * 9 / 10 * math.cos(rad * n)
+		x2 = r + (r - 25) * 4 / 5 * math.sin(rad * n)
+		y2 = r + (r - 25) * 4 / 5 * math.cos(rad * n)
+		c0.coords(backboard1[i], x1, y1, x2, y2)
 	# 文字盤
 	c0.coords(dial0, r, win_size - 8)
 	c0.coords(dial6, 10, r)
@@ -300,7 +320,7 @@ def draw_hand():
 	c0.coords(hour, r, r, x, y)
 	
 	sun = 0
-	if h != h_old :
+	if h == 0 and h != h_old :
 		sun = 1
 	h_old = h
 	return sun
