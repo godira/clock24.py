@@ -1,7 +1,7 @@
 #! /usr/bin/python3
 # coding: UTF-8
 
-import tkinter as tk # Py2の場合は Tkinter as tk
+import Tkinter as tk
 import math, time, datetime
 
 # この場所のデータ
