@@ -1,7 +1,7 @@
 #! /usr/bin/python3
 # coding: UTF-8
 
-import Tkinter as tk
+import tkinter as tk
 import math, time, datetime
 
 # この場所のデータ
@@ -191,11 +191,11 @@ def sunpos():
     # 太陽マーク
 def sun_mark():
     sun_r_h, sun_r_m, sun_s_h, sun_s_m, sun_me_h, sun_me_m, yy, mm, dd = sunpos()
-#    print(yy, "年", mm, "月", dd, "日")
-#    print("日の出  ", sun_r_h, "時", sun_r_m, "分")
-#    print("日の入　", sun_s_h, "時", sun_s_m, "分")
-#    print("南　中　", sun_me_h, "時", sun_me_m, "分")
-#    print()
+    print(yy, "年", mm, "月", dd, "日")
+    print("日の出  ", sun_r_h, "時", sun_r_m, "分")
+    print("日の入　", sun_s_h, "時", sun_s_m, "分")
+    print("南　中　", sun_me_h, "時", sun_me_m, "分")
+    print()
     # 夜
     sun_r = 18 - sun_r_h - sun_r_m / 60.0
     sunrize = sun_r * 15
